@@ -1,0 +1,8 @@
+const encBase64 = require("../node_modules/crypto-js/enc-base64");
+
+//convert a file to base 64
+const convertToBase64 = (file) => {
+  return `data:${file.mimetype};base64,${file.data.toString("base64")}`;
+};
+
+module.exports = convertToBase64;
