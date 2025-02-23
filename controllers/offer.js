@@ -172,10 +172,18 @@ const deleteOffer = async (req, res) => {
 
     await Offer.deleteOne({ _id: offerToDelete._id });
 
-    //delete the images
-    const deletePicture = await cloudinary.uploader.destroy(
-      offerToDelete.product_image.public_id
-    );
+    // //delete the images
+    // const deletePicture = await cloudinary.uploader.destroy(
+    //   offerToDelete.product_image.public_id
+    // );
+
+    const picturesToDelete = offerToDelete.product_image;
+
+    const arrayOfPromises = picturesToDelete.map((picture) => {
+      return cloudinary.uploader.destroy(picture.public_id);
+    });
+
+    const picturesDeleted = await Promise.all(arrayOfPromises);
 
     const deleteFolder = await cloudinary.api.delete_folder(
       `/vinted/offers/${offerToDelete._id}`
