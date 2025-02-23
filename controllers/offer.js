@@ -141,10 +141,30 @@ const updateOffer = async (req, res) => {
         case "color":
           offerToUpdate.product_details[3].COULEUR = req.body[key];
           break;
+        case "picture":
+          break;
+        case "pictureToDelete":
+          break;
         default:
           throw { status: 400, message: `${req.body[key]} doesn't exist` };
       }
     }
+
+    let picturesToDeleteId = req.body.pictureToDelete;
+    if (picturesToDeleteId) {
+      if (typeof picturesToDeleteId === "string") {
+        const deletedPicture = await cloudinary.uploader.destroy(
+          picturesToDeleteId
+        );
+
+        for (let i = 0; i < offerToUpdate.product_image.length; i++) {
+          if (offerToUpdate.product_image[i].public_id === picturesToDeleteId) {
+            offerToUpdate.product_image[i] = {};
+          }
+        }
+      }
+    }
+    console.log(offerToUpdate);
 
     offerToUpdate.markModified("product_details");
 
