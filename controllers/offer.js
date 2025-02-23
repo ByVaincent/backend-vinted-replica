@@ -38,27 +38,32 @@ const publishOffer = async (req, res) => {
       owner: owner._id,
     });
 
-    //upload the picture to cloudinary
-    // const uploadedPicture = await cloudinary.uploader.upload(
-    //   convertToBase64(req.files.picture),
-    //   {
-    //     asset_folder: `/vinted/offers/${newOffer._id}`,
-    //   }
-    // );
+    //upload the picture(s) to cloudinary
+    if (req.files !== null) {
+      const picturesToUpload = req.files.picture;
 
-    //upload of each picture in the req.files.picture array
-    const picturesToUpload = req.files.picture;
+      let uploadedPictures;
 
-    const arrayOfPromises = picturesToUpload.map((picture) => {
-      return cloudinary.uploader.upload(convertToBase64(picture), {
-        asset_folder: `/vinted/offers/${newOffer._id}`,
-      });
-    });
+      if (picturesToUpload.length >= 2) {
+        const arrayOfPromises = picturesToUpload.map((picture) => {
+          return cloudinary.uploader.upload(convertToBase64(picture), {
+            asset_folder: `/vinted/offers/${newOffer._id}`,
+          });
+        });
 
-    const uploadedPicturesArray = await Promise.all(arrayOfPromises);
+        uploadedPictures = await Promise.all(arrayOfPromises);
+      } else {
+        uploadedPictures = await cloudinary.uploader.upload(
+          convertToBase64(picturesToUpload),
+          {
+            asset_folder: `/vinted/offers/${newOffer._id}`,
+          }
+        );
+      }
 
-    //add the datas from cloudinary to the newOffer
-    newOffer.product_image = uploadedPicturesArray;
+      //add the datas from cloudinary to the newOffer
+      newOffer.product_image = uploadedPictures;
+    }
 
     await newOffer.save();
 
@@ -172,22 +177,20 @@ const deleteOffer = async (req, res) => {
 
     await Offer.deleteOne({ _id: offerToDelete._id });
 
-    // //delete the images
-    // const deletePicture = await cloudinary.uploader.destroy(
-    //   offerToDelete.product_image.public_id
-    // );
-
+    //delete the pictures on cloudinary
     const picturesToDelete = offerToDelete.product_image;
 
-    const arrayOfPromises = picturesToDelete.map((picture) => {
-      return cloudinary.uploader.destroy(picture.public_id);
-    });
+    if (picturesToDelete.length !== 0) {
+      const arrayOfPromises = picturesToDelete.map((picture) => {
+        return cloudinary.uploader.destroy(picture.public_id);
+      });
 
-    const picturesDeleted = await Promise.all(arrayOfPromises);
+      const picturesDeleted = await Promise.all(arrayOfPromises);
 
-    const deleteFolder = await cloudinary.api.delete_folder(
-      `/vinted/offers/${offerToDelete._id}`
-    );
+      const deleteFolder = await cloudinary.api.delete_folder(
+        `/vinted/offers/${offerToDelete._id}`
+      );
+    }
 
     res.json("Offer deleted");
   } catch (error) {
