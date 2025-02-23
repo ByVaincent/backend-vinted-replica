@@ -39,15 +39,26 @@ const publishOffer = async (req, res) => {
     });
 
     //upload the picture to cloudinary
-    const uploadedPicture = await cloudinary.uploader.upload(
-      convertToBase64(req.files.picture),
-      {
+    // const uploadedPicture = await cloudinary.uploader.upload(
+    //   convertToBase64(req.files.picture),
+    //   {
+    //     asset_folder: `/vinted/offers/${newOffer._id}`,
+    //   }
+    // );
+
+    //upload of each picture in the req.files.picture array
+    const picturesToUpload = req.files.picture;
+
+    const arrayOfPromises = picturesToUpload.map((picture) => {
+      return cloudinary.uploader.upload(convertToBase64(picture), {
         asset_folder: `/vinted/offers/${newOffer._id}`,
-      }
-    );
+      });
+    });
+
+    const uploadedPicturesArray = await Promise.all(arrayOfPromises);
 
     //add the datas from cloudinary to the newOffer
-    newOffer.product_image = uploadedPicture;
+    newOffer.product_image = uploadedPicturesArray;
 
     await newOffer.save();
 
