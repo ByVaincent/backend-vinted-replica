@@ -141,9 +141,51 @@ const updateOffer = async (req, res) => {
         case "color":
           offerToUpdate.product_details[3].COULEUR = req.body[key];
           break;
+        case "pictureToDelete":
+          break;
         default:
           throw { status: 400, message: `${req.body[key]} doesn't exist` };
       }
+    }
+
+    //Update de pictures
+    const newPicturesArray = [];
+
+    //Delete the pictures in cloudinary and in the offer
+    //case only one picture
+    if (typeof req.body.pictureToDelete === "string") {
+      const deletedPiture = await cloudinary.uploader.destroy(
+        req.body.pictureToDelete
+      );
+
+      offerToUpdate.product_image.forEach((picture) => {
+        if (picture.public_id !== req.body.pictureToDelete) {
+          newPicturesArray.push(picture);
+        }
+      });
+      offerToUpdate.product_image = newPicturesArray;
+    }
+    //Case multiple pictures
+    else if (typeof req.body.pictureToDelete === "object") {
+      const picturesToDeleteArray = req.body.pictureToDelete;
+
+      const arrayOfPromises = picturesToDeleteArray.map((pictureId) => {
+        return cloudinary.uploader.destroy(pictureId);
+      });
+
+      const result = await Promise.all(arrayOfPromises);
+
+      //update the product_image field
+      offerToUpdate.product_image.forEach((picture) => {
+        let varTest = false;
+        picturesToDeleteArray.forEach((pictIdToDelete) => {
+          if (picture.public_id === pictIdToDelete) {
+            varTest = true;
+          }
+        });
+        if (varTest === false) newPicturesArray.push(picture);
+      });
+      offerToUpdate.product_image = newPicturesArray;
     }
 
     offerToUpdate.markModified("product_details");
