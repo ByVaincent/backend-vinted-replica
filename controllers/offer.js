@@ -188,9 +188,33 @@ const updateOffer = async (req, res) => {
       offerToUpdate.product_image = newPicturesArray;
     }
 
-    offerToUpdate.markModified("product_details");
+    //add the new pictures
 
-    await offerToUpdate.save();
+    if (req.files) {
+      //case 2 or more pictures
+      if (req.files.newPicture.length >= 2) {
+        const picturesToUpload = req.files.newPicture;
+
+        const arrayOfPromises = picturesToUpload.map((picture) => {
+          return cloudinary.uploader.upload(convertToBase64(picture), {
+            asset_folder: `vinted/offers/${req.params.id}`,
+          });
+        });
+
+        const result = await Promise.all(arrayOfPromises);
+
+        //update the offer's object for the DB
+        result.forEach((picture) => {
+          offerToUpdate.product_image.push(picture);
+        });
+      }
+    }
+
+    console.log(offerToUpdate.product_image);
+
+    // offerToUpdate.markModified("product_details");
+
+    // await offerToUpdate.save();
 
     res.json("Product updated");
   } catch (error) {
