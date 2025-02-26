@@ -218,8 +218,6 @@ const updateOffer = async (req, res) => {
       }
     }
 
-    console.log(offerToUpdate.product_image);
-
     offerToUpdate.markModified("product_details");
 
     await offerToUpdate.save();
