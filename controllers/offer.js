@@ -207,14 +207,22 @@ const updateOffer = async (req, res) => {
         result.forEach((picture) => {
           offerToUpdate.product_image.push(picture);
         });
+      } else {
+        const uploadedPicture = await cloudinary.uploader.upload(
+          convertToBase64(req.files.newPicture),
+          {
+            asset_folder: `vinted/offers/${req.params.id}`,
+          }
+        );
+        offerToUpdate.product_image.push(uploadedPicture);
       }
     }
 
     console.log(offerToUpdate.product_image);
 
-    // offerToUpdate.markModified("product_details");
+    offerToUpdate.markModified("product_details");
 
-    // await offerToUpdate.save();
+    await offerToUpdate.save();
 
     res.json("Product updated");
   } catch (error) {
