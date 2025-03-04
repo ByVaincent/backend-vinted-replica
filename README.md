@@ -1,5 +1,7 @@
 # vinted-replica
-Fullstack exercise based on a replica of the Vinted app
 
-##Stack
+Fullstack exercise based on Vinted app
+
+## Stack
+
 React, express,mongodb, cloudinary
