@@ -8,6 +8,8 @@ const decryptingFunction = require("../utils/passwordCrypt").decryptingFunction;
 
 const signup = async (req, res) => {
   try {
+    console.log(req.body);
+
     //check the incoming datas
     if (!req.body.email) {
       throw { status: 400, message: "Please add a valid email" };
@@ -16,7 +18,7 @@ const signup = async (req, res) => {
     } else if (!req.body.password || req.body.password.length < 5) {
       throw {
         status: 400,
-        message: "Please add a valid password (> 4 characters",
+        message: "Please add a valid password (> 4 characters)",
       };
     }
 
@@ -42,15 +44,19 @@ const signup = async (req, res) => {
       salt: newPassword.salt,
     });
 
-    //upload de l'image
-    const uploadAvatar = await cloudinary.uploader.upload(
-      convertToBase64(req.files.picture),
-      { asset_folder: `/vinted/users/${newUser._id}` }
-    );
+    //upload de l'image si elle existe
+
+    let uploadAvatar;
+    if (req.files?.picture) {
+      uploadAvatar = await cloudinary.uploader.upload(
+        convertToBase64(req.files.picture),
+        { asset_folder: `/vinted/users/${newUser._id}` }
+      );
+    }
 
     newUser.account.avatar = {
-      secure_url: uploadAvatar.secure_url,
-      public_id: uploadAvatar.public_id,
+      secure_url: uploadAvatar ? uploadAvatar.secure_url : "",
+      public_id: uploadAvatar ? uploadAvatar.public_id : "",
     };
 
     await newUser.save();
@@ -62,6 +68,8 @@ const signup = async (req, res) => {
       account: newUser.account,
     });
   } catch (error) {
+    console.log(error);
+
     res
       .status(error.status || 500)
       .json(error.message || "Internal server error");
