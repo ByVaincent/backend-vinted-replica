@@ -319,8 +319,8 @@ const getFilteredOffers = async (req, res) => {
       .populate("owner", "account")
       .sort(sortObject)
       .skip(skip)
-      .limit(limit)
-      .select("product_name product_price");
+      .limit(limit);
+    // .select("product_name product_price");
 
     res.json({ count: offerLength, offers: filteredOffers });
   } catch (error) {
@@ -341,17 +341,7 @@ const getDetailsOffer = async (req, res) => {
       "account"
     );
 
-    const {
-      _id,
-      product_name,
-      product_description,
-      product_price,
-      product_details,
-      owner,
-      product_image,
-    } = offer;
-
-    res.json({ product_details, owner, product_image });
+    res.json(offer);
   } catch (error) {
     res
       .status(error.status || 500)

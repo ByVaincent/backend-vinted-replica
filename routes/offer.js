@@ -20,5 +20,5 @@ router.put(
 );
 router.delete("/offer/delete/:id", isAuthenticatedMiddl, offerCtrl.deleteOffer);
 
-router.get("/offers/:id", offerCtrl.getDetailsOffer);
+router.get("/offer/:id", offerCtrl.getDetailsOffer);
 module.exports = router;
