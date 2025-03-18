@@ -79,6 +79,8 @@ const publishOffer = async (req, res) => {
 
 const updateOffer = async (req, res) => {
   try {
+    console.log(req.body);
+    
     //check the datas
     if (req.body.title && req.body.title.length > 50) {
       throw {
@@ -232,6 +234,45 @@ const updateOffer = async (req, res) => {
   }
 };
 
+const updateOfferSold = async (req, res) => {
+  try {
+    console.log(req.body);
+    
+    //check the datas
+    if (!req.body.sold) {
+      throw {
+        status: 400,
+        message: "Cannot update the offer",
+      };
+    }
+
+    //find the offer to update
+    const offerToUpdate = await Offer.findById(req.params.id)
+      .populate("owner")
+      .catch((error) => {
+        throw { status: 400, message: "Invalid Id" };
+      });
+
+
+    if (!offerToUpdate) {
+      throw { status: 400, message: "No offer found" };
+    }
+
+
+    offerToUpdate.sold = req.body.sold;
+    console.log(offerToUpdate);
+    
+
+    await offerToUpdate.save();
+
+    res.json("Product updated");
+  } catch (error) {
+    res
+      .status(error.status || 500)
+      .json(error.message || "Internal server error");
+  }
+};
+
 const deleteOffer = async (req, res) => {
   try {
     if (!req.params.id) {
@@ -350,6 +391,7 @@ const getDetailsOffer = async (req, res) => {
 module.exports = {
   publishOffer,
   updateOffer,
+  updateOfferSold,
   deleteOffer,
   getFilteredOffers,
   getDetailsOffer,

@@ -12,12 +12,20 @@ router.post(
   fileUpload(),
   offerCtrl.publishOffer
 );
+
 router.put(
   "/offer/update/:id",
   isAuthenticatedMiddl,
   fileUpload(),
   offerCtrl.updateOffer
 );
+
+router.put(
+  "/offer/updateSold/:id",
+  isAuthenticatedMiddl,
+  offerCtrl.updateOfferSold
+);
+
 router.delete("/offer/delete/:id", isAuthenticatedMiddl, offerCtrl.deleteOffer);
 
 router.get("/offer/:id", offerCtrl.getDetailsOffer);
