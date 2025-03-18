@@ -13,7 +13,7 @@ const publishOffer = async (req, res) => {
       !req.body.price ||
       !req.body.description ||
       req.body.title.length > 50 ||
-      req.body.price > 100000 ||
+      Number(req.body.price) > 50000 ||
       req.body.description.length > 500
     ) {
       throw {
@@ -25,15 +25,15 @@ const publishOffer = async (req, res) => {
     const owner = await User.findOne({ token: req.token });
 
     const newOffer = new Offer({
-      product_name: req.body.title,
-      product_description: req.body.description,
-      product_price: req.body.price,
+      product_name: req.body.title || "",
+      product_description: req.body.description || "",
+      product_price: Number(req.body.price) || "",
       product_details: [
-        { MARQUE: req.body.brand },
-        { TAILLE: req.body.size },
-        { ÉTAT: req.body.condition },
-        { COULEUR: req.body.color },
-        { EMPLACEMENT: req.body.city },
+        { MARQUE: req.body.brand || "" },
+        { TAILLE: req.body.size || "" },
+        { ÉTAT: req.body.condition || "" },
+        { COULEUR: req.body.color || "" },
+        { EMPLACEMENT: req.body.city || "" },
       ],
       owner: owner._id,
     });
@@ -45,7 +45,7 @@ const publishOffer = async (req, res) => {
       let uploadedPictures;
 
       if (picturesToUpload.length >= 2) {
-        const arrayOfPromises = picturesToUpload.map((picture) => {
+        const arrayOfPromises = await picturesToUpload.map((picture) => {
           return cloudinary.uploader.upload(convertToBase64(picture), {
             asset_folder: `/vinted/offers/${newOffer._id}`,
           });
@@ -64,6 +64,8 @@ const publishOffer = async (req, res) => {
       //add the datas from cloudinary to the newOffer
       newOffer.product_image = uploadedPictures;
     }
+
+    console.log(newOffer);
 
     await newOffer.save();
 
@@ -274,7 +276,7 @@ const deleteOffer = async (req, res) => {
 
 const getFilteredOffers = async (req, res) => {
   try {
-    let { title, priceMin, priceMax, sort, page } = req.query;
+    let { title, priceMin, priceMax, sort, page, limit } = req.query;
 
     // prepare the pagination
     if (!page) {
@@ -282,8 +284,6 @@ const getFilteredOffers = async (req, res) => {
     }
 
     page = Number(page);
-
-    const limit = 5;
 
     const skip = page - 1 < 0 ? 0 : (page - 1) * limit;
 
@@ -312,8 +312,7 @@ const getFilteredOffers = async (req, res) => {
 
     const offerLength = await Offer.countDocuments(filterObject)
       .populate("owner", "account")
-      .sort(sortObject)
-      .skip(skip);
+      .sort(sortObject);
 
     const filteredOffers = await Offer.find(filterObject)
       .populate("owner", "account")

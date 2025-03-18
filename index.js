@@ -13,6 +13,7 @@ mongoose.connect(process.env.MONGODB_URI);
 //routes import
 const userRoute = require("./routes/user");
 const offerRoute = require("./routes/offer");
+const paymentRoute = require("./routes/payment")
 
 // cloudinary configuration
 cloudinary.config({
@@ -28,6 +29,8 @@ app.get("/", (req, res) => {
 app.use(userRoute);
 
 app.use(offerRoute);
+
+app.use(paymentRoute);
 
 app.all("*", (req, res) => {
   res.status(404).json("Not found!");

@@ -8,8 +8,6 @@ const decryptingFunction = require("../utils/passwordCrypt").decryptingFunction;
 
 const signup = async (req, res) => {
   try {
-    console.log(req.body);
-
     //check the incoming datas
     if (!req.body.email) {
       throw { status: 400, message: "Please add a valid email" };
